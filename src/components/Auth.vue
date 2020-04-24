@@ -23,13 +23,14 @@
     <v-card-text>
       <v-form>
         <ValidationProvider
-          v-slot="{ errors }"
+          v-slot="{ errors, valid }"
           name="Name"
-          rules="required|between:2,10|alpha_spaces"
+          rules="required|alpha_spaces|min:2|max:10"
         >
           <v-text-field
             v-if="!signIn"
             v-model="name"
+            @keyup="setValidName(valid)"
             label="Name"
             name="Name"
             :counter="10"
@@ -40,38 +41,40 @@
           />
         </ValidationProvider>
         <ValidationProvider
-          v-slot="{ errors }"
+          v-slot="{ errors, valid }"
           name="Email"
           rules="required|email"
         >
           <v-text-field
             v-model="email"
+            @keyup="setValidEmail(valid)"
             label="Email"
             name="Email"
-            required
             :error-messages="errors"
             prepend-icon="mdi-email"
             type="text"
+            required
           />
         </ValidationProvider>
         <ValidationProvider
-          v-slot="{ errors }"
+          v-slot="{ errors, valid }"
           name="Password"
           :rules="{
-            regex: /^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)(?=.*?[!-\/:-@[-`{-~])[!-~]+$/i
+            regex: /^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)(?=.*?[!-\/:-@[-`{-~])[!-~]{5,30}$/i
           }"
           v-if="!forgotPassword"
         >
           <v-text-field
             id="password"
+            @keyup="setValidPassword(valid)"
             v-model="password"
             label="Password"
             name="password"
             :error-messages="errors"
             prepend-icon="mdi-lock"
             type="password"
-            required
             :counter="30"
+            required
           />
         </ValidationProvider>
       </v-form>
@@ -84,20 +87,25 @@
         >Back to Login</v-btn
       >
       <v-spacer />
-      <v-btn color="red" v-if="forgotPassword">Submit</v-btn>
-      <v-btn color="primary" v-else>{{ content }}</v-btn>
+      <v-btn color="red" v-if="forgotPassword" :disabled="!showSubmitFlag"
+        >Submit</v-btn
+      >
+      <v-btn color="primary" :disabled="!showContentFlag" v-else>{{
+        content
+      }}</v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Prop } from "vue-property-decorator";
 import { extend } from "vee-validate";
 import { ValidationProvider } from "vee-validate";
 import {
   required,
   email,
-  between,
+  min,
+  max,
   // eslint-disable-next-line @typescript-eslint/camelcase
   alpha_spaces,
   regex
@@ -105,9 +113,13 @@ import {
 
 extend("email", { ...email, message: "Email must be valid" });
 extend("required", { ...required, message: "{_field_} can not be empty" });
-extend("between", {
-  ...between,
-  message: "The {_field_} field must be between {min} and {max} characters"
+extend("min", {
+  ...min,
+  message: "The {_field_} field must be at least {length} characters"
+});
+extend("max", {
+  ...max,
+  message: "The {_field_} field may not be greater than {length} characters"
 });
 extend("alpha_spaces", {
   // eslint-disable-next-line @typescript-eslint/camelcase
@@ -118,7 +130,7 @@ extend("alpha_spaces", {
 extend("regex", {
   ...regex,
   message:
-    "Password must contain at least one uppercase letter, one lowercase letter, a number and a symbol."
+    "The {_field_} field must between 5 and 30 characters. It must contain at least one uppercase letter, one lowercase letter, one symbol and a number."
 });
 
 @Component({ components: { ValidationProvider } })
@@ -130,6 +142,38 @@ export default class Auth extends Vue {
   name = "";
   email = "";
   password = "";
+  isValidEmail = false;
+  isValidPassword = false;
+  isValidName = false;
+  @Prop({ default: "", type: String }) readonly errorMessage!: string;
+
+  get showContentFlag(): boolean {
+    if (
+      this.signIn &&
+      !this.forgotPassword &&
+      this.isValidEmail &&
+      this.isValidPassword
+    ) {
+      return true;
+    }
+    if (
+      !this.signIn &&
+      !this.forgotPassword &&
+      this.isValidName &&
+      this.isValidEmail &&
+      this.isValidPassword
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  get showSubmitFlag(): boolean {
+    if (this.signIn && this.forgotPassword && this.isValidEmail) {
+      return true;
+    }
+    return false;
+  }
 
   toggleAuth() {
     const tmp = this.content;
@@ -140,5 +184,30 @@ export default class Auth extends Vue {
   toggleForgotPassword() {
     this.forgotPassword = !this.forgotPassword;
   }
+
+  setValidName(valid: boolean) {
+    this.isValidName = valid;
+  }
+  setValidEmail(valid: boolean) {
+    this.isValidEmail = valid;
+  }
+  setValidPassword(valid: boolean) {
+    this.isValidPassword = valid;
+  }
+
+  // authorize() {
+  //   if (this.signIn && this.forgotPassword) {
+  //     // this.$emit("signIn", this.email, this.password);
+  //   }
+  //   if (!this.signIn && this.forgotPassword) {
+  //     // this.$emit("register", this.name, this.email, this.password);
+  //   }
+  // }
+
+  // register() {
+  // if (this.forgotPassword) {
+  // this.$emit("resetPassword", this.email);
+  //   }
+  // }
 }
 </script>
