@@ -8,7 +8,7 @@
         <template v-slot:activator="{ on }">
           <v-switch
             v-on="on"
-            v-model="signIn"
+            v-model="signInFlag"
             @change="toggleAuth"
             :label="switchMessage"
             color="orange"
@@ -16,7 +16,7 @@
             light
           />
         </template>
-        <span v-if="signIn">Please register before sign in.</span>
+        <span v-if="signInFlag">Please register before sign in.</span>
         <span v-else>Please sign in if you have already registered.</span>
       </v-tooltip>
     </v-toolbar>
@@ -28,9 +28,9 @@
           rules="required|alpha_spaces|min:2|max:10"
         >
           <v-text-field
-            v-if="!signIn"
+            v-if="!signInFlag"
             v-model="name"
-            @keyup="setValidName(valid)"
+            @keyup="setIsValidName(valid)"
             label="Name"
             name="Name"
             :counter="10"
@@ -47,7 +47,7 @@
         >
           <v-text-field
             v-model="email"
-            @keyup="setValidEmail(valid)"
+            @keyup="setIsValidEmail(valid)"
             label="Email"
             name="Email"
             :error-messages="errors"
@@ -66,7 +66,7 @@
         >
           <v-text-field
             id="password"
-            @keyup="setValidPassword(valid)"
+            @keyup="setIsValidPassword(valid)"
             v-model="password"
             label="Password"
             name="password"
@@ -80,25 +80,33 @@
       </v-form>
     </v-card-text>
     <v-card-actions>
-      <v-btn v-if="signIn && !forgotPassword" @click="toggleForgotPassword"
+      <v-btn v-if="signInFlag && !forgotPassword" @click="toggleForgotPassword"
         >forgot password?</v-btn
       >
       <v-btn v-if="forgotPassword" @click="toggleForgotPassword"
         >Back to Login</v-btn
       >
       <v-spacer />
-      <v-btn color="red" v-if="forgotPassword" :disabled="!showSubmitFlag"
+      <v-btn
+        v-if="forgotPassword"
+        :disabled="!showSubmitFlag"
+        color="red"
+        @click="submit"
         >Submit</v-btn
       >
-      <v-btn color="primary" :disabled="!showContentFlag" v-else>{{
-        content
-      }}</v-btn>
+      <v-btn
+        v-else
+        :disabled="!showContentFlag"
+        color="primary"
+        @click="submit"
+        >{{ content }}</v-btn
+      >
     </v-card-actions>
   </v-card>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Emit } from "vue-property-decorator";
 import { extend } from "vee-validate";
 import { ValidationProvider } from "vee-validate";
 import {
@@ -135,7 +143,7 @@ extend("regex", {
 
 @Component({ components: { ValidationProvider } })
 export default class Auth extends Vue {
-  signIn = true;
+  signInFlag = true;
   forgotPassword = false;
   content = "Sign in";
   switchMessage = "Register";
@@ -149,7 +157,7 @@ export default class Auth extends Vue {
 
   get showContentFlag(): boolean {
     if (
-      this.signIn &&
+      this.signInFlag &&
       !this.forgotPassword &&
       this.isValidEmail &&
       this.isValidPassword
@@ -157,7 +165,7 @@ export default class Auth extends Vue {
       return true;
     }
     if (
-      !this.signIn &&
+      !this.signInFlag &&
       !this.forgotPassword &&
       this.isValidName &&
       this.isValidEmail &&
@@ -169,7 +177,7 @@ export default class Auth extends Vue {
   }
 
   get showSubmitFlag(): boolean {
-    if (this.signIn && this.forgotPassword && this.isValidEmail) {
+    if (this.signInFlag && this.forgotPassword && this.isValidEmail) {
       return true;
     }
     return false;
@@ -185,29 +193,35 @@ export default class Auth extends Vue {
     this.forgotPassword = !this.forgotPassword;
   }
 
-  setValidName(valid: boolean) {
+  setIsValidName(valid: boolean) {
     this.isValidName = valid;
   }
-  setValidEmail(valid: boolean) {
+  setIsValidEmail(valid: boolean) {
     this.isValidEmail = valid;
   }
-  setValidPassword(valid: boolean) {
+  setIsValidPassword(valid: boolean) {
     this.isValidPassword = valid;
   }
 
-  // authorize() {
-  //   if (this.signIn && this.forgotPassword) {
-  //     // this.$emit("signIn", this.email, this.password);
-  //   }
-  //   if (!this.signIn && this.forgotPassword) {
-  //     // this.$emit("register", this.name, this.email, this.password);
-  //   }
-  // }
+  submit() {
+    if (this.signInFlag && !this.forgotPassword) this.signIn();
+    if (!this.signInFlag && !this.forgotPassword) this.register();
+    if (this.forgotPassword) return this.resetPassword();
+  }
 
-  // register() {
-  // if (this.forgotPassword) {
-  // this.$emit("resetPassword", this.email);
-  //   }
-  // }
+  @Emit()
+  signIn() {
+    return { email: this.email, password: this.password };
+  }
+
+  @Emit()
+  register() {
+    return { userName: this.name, email: this.email, password: this.password };
+  }
+
+  @Emit()
+  resetPassword() {
+    return this.email;
+  }
 }
 </script>
