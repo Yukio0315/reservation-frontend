@@ -20,6 +20,9 @@
         <span v-else>Please sign in if you have already registered.</span>
       </v-tooltip>
     </v-toolbar>
+    <v-alert type="error" dismissible="true" v-if="errorMessage">{{
+      errorMessage
+    }}</v-alert>
     <v-card-text>
       <v-form>
         <ValidationProvider
@@ -107,7 +110,8 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from "vue-property-decorator";
+import { Vue, Component, Emit } from "vue-property-decorator";
+import { authModule } from "@/store/modules/auth.module";
 import { extend } from "vee-validate";
 import { ValidationProvider } from "vee-validate";
 import {
@@ -154,7 +158,6 @@ export default class Auth extends Vue {
   isValidEmail = false;
   isValidPassword = false;
   isValidName = false;
-  @Prop({ default: "", type: String }) readonly errorMessage!: string;
 
   get showContentFlag(): boolean {
     if (
@@ -182,6 +185,10 @@ export default class Auth extends Vue {
       return true;
     }
     return false;
+  }
+
+  get errorMessage(): string {
+    return authModule.errorMessage;
   }
 
   toggleAuth() {

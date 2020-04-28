@@ -16,6 +16,12 @@ export interface AuthState {
 @Module({ dynamic: true, name: "auth", store, namespaced: true })
 class Auth extends VuexModule implements AuthState {
   public signedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+  public errorMessage = "";
+
+  @Mutation
+  error(message: string) {
+    [(this.errorMessage = message)];
+  }
 
   @Mutation
   private logout() {
@@ -33,19 +39,25 @@ class Auth extends VuexModule implements AuthState {
   }
   @Action({ commit: "login", rawError: true })
   public async signIn(user: SignInUser) {
-    return await AuthService.signIn(user);
+    this.error("");
+    return await AuthService.signIn(user).catch(() => {
+      this.error("Sign in failed. Invalid email or password");
+    });
   }
   @Action({ commit: "login", rawError: true })
   public async register(user: NewUser) {
-    const response = await AuthService.register(user);
-    if (response.status == 201) {
-      const signInUser = await AuthService.signIn({
-        email: user.email,
-        password: user.password
-      });
-      return signInUser
-    }
-    return {};
+    await AuthService.register(user).catch(() => {
+      this.error("This email has already registered. Please signin.");
+    });
+
+    const signInUser = await AuthService.signIn({
+      email: user.email,
+      password: user.password
+    }).catch(() => {
+      this.error("This email address has already registered. Please signin.");
+    });
+    this.error("");
+    return signInUser;
   }
 }
 
