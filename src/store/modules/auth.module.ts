@@ -13,7 +13,7 @@ export interface AuthState {
   signedInUser: AccessToken | {};
 }
 
-@Module({ dynamic: true, name: "auth", store, namespaced: true })
+@Module({ dynamic: true, name: "authenticate", store, namespaced: true })
 class Auth extends VuexModule implements AuthState {
   public signedInUser = JSON.parse(localStorage.getItem("user") || "{}");
   public errorMessage = "";
@@ -46,15 +46,20 @@ class Auth extends VuexModule implements AuthState {
   }
   @Action({ commit: "login", rawError: true })
   public async register(user: NewUser) {
-    await AuthService.register(user).catch(() => {
-      this.error("This email has already registered. Please signin.");
-    });
+    this.error("");
+    try {
+      await AuthService.register(user);
+    } catch (e) {
+      this.error("This email has already registered. Please try signin.");
+      return {};
+    }
 
     const signInUser = await AuthService.signIn({
       email: user.email,
       password: user.password
     }).catch(() => {
-      this.error("This email address has already registered. Please signin.");
+      this.error("This email has already registered. Please try signin.");
+      return;
     });
     this.error("");
     return signInUser;

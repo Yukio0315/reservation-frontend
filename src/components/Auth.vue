@@ -20,7 +20,7 @@
         <span v-else>Please sign in if you have already registered.</span>
       </v-tooltip>
     </v-toolbar>
-    <v-alert type="error" dismissible="true" v-if="errorMessage">{{
+    <v-alert type="error" :dismissible="true" v-if="errorMessage">{{
       errorMessage
     }}</v-alert>
     <v-card-text>
