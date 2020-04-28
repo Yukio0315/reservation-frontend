@@ -1,11 +1,11 @@
 import Vue from "vue";
 import Vuex from "vuex";
+import { AuthState } from "./modules/auth.module";
 
 Vue.use(Vuex);
 
-export default new Vuex.Store({
-  state: {},
-  mutations: {},
-  actions: {},
-  modules: {}
-});
+export interface State {
+  counter: AuthState;
+}
+
+export default new Vuex.Store<State>({});

@@ -25,7 +25,7 @@
         <ValidationProvider
           v-slot="{ errors, valid }"
           name="Name"
-          rules="required|alpha_spaces|min:2|max:10"
+          rules="required|alpha_spaces|min:2|max:20"
         >
           <v-text-field
             v-if="!signInFlag"
@@ -60,6 +60,7 @@
           v-slot="{ errors, valid }"
           name="Password"
           :rules="{
+            required: true,
             regex: /^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?\d)(?=.*?[!-\/:-@[-`{-~])[!-~]{5,30}$/i
           }"
           v-if="!forgotPassword"

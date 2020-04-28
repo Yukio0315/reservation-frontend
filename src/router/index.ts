@@ -1,25 +1,29 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import Home from "../views/Home.vue";
+import Authentication from "../views/Authentication.vue";
 // import Calendar from '../views/Calendar.vue'
-// import User from '../views/User.vue'
+import User from "../views/User.vue";
 
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   {
     path: "/",
-    component: Home
+    component: Authentication
+  },
+  {
+    path: "/users/:id",
+    component: User
+    // children: [
+    //   {
+    //     path: "/calendar",
+    //     component: Calendar
+    //   }
+    // ]
   }
   // {
-  //   path: "/users/:id",
-  //   component: User
-  //   children: [
-  //     {
-  //       path: "/calendar",
-  //       component: Calendar
-  //     }
-  //   ]
+  //   path: "/password-reset/:uuid",
+  //   component: Authentication
   // }
   // {
   //   path: "*",
