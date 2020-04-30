@@ -22,6 +22,10 @@ class Auth extends VuexModule implements AuthState {
   error(message: string) {
     [(this.errorMessage = message)];
   }
+  @Action({ commit: "error" })
+  public setError(error: string) {
+    return error;
+  }
 
   @Mutation
   private logout() {
@@ -30,7 +34,7 @@ class Auth extends VuexModule implements AuthState {
   @Action({ commit: "logout" })
   public signOut() {
     AuthService.signOut();
-    return;
+    return {};
   }
 
   @Mutation

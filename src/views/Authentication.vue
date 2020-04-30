@@ -4,10 +4,11 @@
       <v-col cols="12" sm="8" md="4">
         <v-skeleton-loader v-if="loading" type="article"></v-skeleton-loader>
         <Auth
-          v-else
+          v-if="!loading"
           @register="handleRegister"
           @sign-in="handleSignIn"
           @reset-password="handleResetPassword"
+          :resetMessage="message"
         />
       </v-col>
     </v-row>
@@ -19,10 +20,13 @@ import { Vue, Component } from "vue-property-decorator";
 import Auth from "@/components/Auth.vue";
 import { NewUser, SignInUser } from "@/types/user";
 import { authModule } from "@/store/modules/auth.module";
+import authService from "../services/auth.service";
 
 @Component({ components: { Auth } })
 export default class Authentication extends Vue {
   loading = false;
+  message = "";
+
   beforeCreate() {
     this.loading = true;
   }
@@ -43,8 +47,14 @@ export default class Authentication extends Vue {
       this.$router.push(`/users/${authModule.signedInUser.id}`);
     }
   }
+
   async handleResetPassword(email: string) {
-    console.log("reset password ", email);
+    try {
+      await authService.reservePassword(email);
+    } catch (e) {
+      authModule.setError("An error occured. Please retry the request.");
+    }
+    this.message = "We sent a email. Please check and reset password.";
   }
 
   async handleSignIn(user: SignInUser) {

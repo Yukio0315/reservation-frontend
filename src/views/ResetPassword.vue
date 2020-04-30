@@ -16,10 +16,9 @@
 import { Vue, Component } from "vue-property-decorator";
 import AuthService from "@/services/auth.service";
 import Password from "@/components/Password.vue";
-import PasswordResetSuccess from "@/components/PasswordResetSuccess.vue";
 import authService from "@/services/auth.service";
 
-@Component({ components: { Password, PasswordResetSuccess } })
+@Component({ components: { Password } })
 export default class ResetPassword extends Vue {
   loading = false;
   success = false;

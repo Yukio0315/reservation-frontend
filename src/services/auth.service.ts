@@ -26,6 +26,10 @@ class AuthService {
     });
   }
 
+  async reservePassword(email: string): Promise<AxiosResponse> {
+    return await axios.post("reset-password", { email });
+  }
+
   async checkValidURL(query: string): Promise<AxiosResponse> {
     return await axios.get(`reset-password/${query}`);
   }

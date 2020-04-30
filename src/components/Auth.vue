@@ -23,6 +23,9 @@
     <v-alert type="error" :dismissible="true" v-if="errorMessage">{{
       errorMessage
     }}</v-alert>
+    <v-alert type="success" :dismissible="true" v-if="resetMessage">{{
+      resetMessage
+    }}</v-alert>
     <v-card-text>
       <v-form>
         <ValidationProvider
@@ -110,7 +113,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Emit } from "vue-property-decorator";
+import { Vue, Component, Emit, Prop } from "vue-property-decorator";
 import { authModule } from "@/store/modules/auth.module";
 import { extend } from "vee-validate";
 import { ValidationProvider } from "vee-validate";
@@ -158,6 +161,7 @@ export default class Auth extends Vue {
   isValidEmail = false;
   isValidPassword = false;
   isValidName = false;
+  @Prop(String) readonly resetMessage!: string;
 
   get showContentFlag(): boolean {
     if (
@@ -229,6 +233,7 @@ export default class Auth extends Vue {
 
   @Emit()
   resetPassword() {
+    this.forgotPassword = false;
     return this.email;
   }
 }
