@@ -21,12 +21,18 @@ import { NewUser, SignInUser } from "@/types/user";
 import { authModule } from "@/store/modules/auth.module";
 
 @Component({ components: { Auth } })
-export default class Home extends Vue {
+export default class Authentication extends Vue {
   loading = false;
+  beforeCreate() {
+    this.loading = true;
+  }
   created() {
     if (localStorage.getItem("user")) {
       this.$router.push(`/users/${authModule.signedInUser.id}`);
     }
+  }
+  mounted() {
+    this.loading = false;
   }
 
   async handleRegister(user: NewUser) {

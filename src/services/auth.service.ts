@@ -25,6 +25,14 @@ class AuthService {
       email: user.email
     });
   }
+
+  async checkValidURL(query: string): Promise<AxiosResponse> {
+    return await axios.get(`reset-password/${query}`);
+  }
+
+  async resetPassword(query: string, password: string): Promise<AxiosResponse> {
+    return await axios.patch(`reset-password/${query}`, { password });
+  }
 }
 
 export default new AuthService();
