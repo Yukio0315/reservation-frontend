@@ -16,3 +16,17 @@ export type AccessToken = {
   id: number;
   permission: string;
 };
+
+export type UserProfile = {
+  createdAt: string;
+  userName: string;
+  email: string;
+  permission: string;
+  reservations: Array<Reservation>;
+};
+
+type Reservation = {
+  id: number;
+  start: string;
+  end: string;
+};

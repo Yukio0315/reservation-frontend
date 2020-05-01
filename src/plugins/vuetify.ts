@@ -11,5 +11,12 @@ export default new Vuetify({
   },
   dark: {
     primary: colors.blue.lighten3
+  },
+  icons: {
+    iconfont: "mdi",
+    values: {
+      calendar: "mdi-calendar",
+      person: "mdi-account-box"
+    }
   }
 });
