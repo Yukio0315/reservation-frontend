@@ -47,11 +47,9 @@ export default class User extends Vue {
     );
     const events: Array<Duration> = eventResponse.data;
     this.events = events.map(event => {
-      console.log(moment(event.start).format("YYYY-MM-DD HH:mm"));
-
       const start = moment(event.start).format("YYYY-MM-DD HH:mm");
       const end = moment(event.end).format("YYYY-MM-DD HH:mm");
-      return { start, end, name: "Reservable", color: "indigo" };
+      return { start, end, name: "Available", color: "indigo" };
     });
 
     const profileResponse = await UserService.getUserProfile(
@@ -66,7 +64,6 @@ export default class User extends Vue {
       });
       this.events.concat(reservations);
     }
-    console.log(this.events);
   }
 }
 </script>

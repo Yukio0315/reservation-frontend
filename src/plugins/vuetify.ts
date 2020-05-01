@@ -16,7 +16,8 @@ export default new Vuetify({
     iconfont: "mdi",
     values: {
       calendar: "mdi-calendar",
-      person: "mdi-account-box"
+      person: "mdi-account-box",
+      signOut: "mdi-exit-to-app"
     }
   }
 });
