@@ -3,7 +3,7 @@ export type Duration = {
   end: string;
 };
 
-export type Event = {
+export type EventContent = {
   name: string;
   start: string;
   end: string;
