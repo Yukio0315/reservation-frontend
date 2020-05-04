@@ -10,11 +10,10 @@ class ReservationService {
     );
   }
   cancel(id: number, reservationId: number) {
-    return axios.post(
-      `reservations/${id}`,
-      { id: reservationId },
-      { headers: authHeader() }
-    );
+    return axios.delete(`reservations/${id}`, {
+      headers: authHeader(),
+      data: { id: reservationId }
+    });
   }
 }
 

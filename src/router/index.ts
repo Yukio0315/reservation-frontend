@@ -56,9 +56,9 @@ router.beforeEach((to, from, next) => {
   const authRequired = !publicPages.includes(to.path);
 
   const loggedIn = JSON.parse(localStorage.getItem("user") || "{}");
-  const isNoToken = !Object.keys(loggedIn).length;
+  const isNoToken = Object.keys(loggedIn).length === 0;
   const isTokenExpired =
-    Object.keys(loggedIn).length && moment().diff(loggedIn.expire) > 0;
+    Object.keys(loggedIn).length !== 0 && moment().diff(loggedIn.expire) > 0;
 
   if (authRequired && (isNoToken || isTokenExpired)) {
     next("/auth");

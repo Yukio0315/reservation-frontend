@@ -12,6 +12,7 @@
           v-if="isCalendar"
           :events="events"
           @add-reservation="handleAddReservation"
+          @cancel-reservation="handleCancelReservation"
         />
         <Profile v-if="!isCalendar" :profile="profile" />
         <router-view name="footer"></router-view>
@@ -29,7 +30,6 @@ import EventService from "@/services/event.service";
 import ReservationService from "@/services/reservation.service";
 import { EventContent, Duration } from "@/types/event";
 import { UserProfile } from "@/types/user";
-import { timeout } from "@/utils/util";
 import moment from "moment";
 
 @Component({ components: { Calendar, Profile } })
@@ -37,7 +37,7 @@ export default class User extends Vue {
   loading = false;
   isCalendar = true;
   errorMessage = "";
-  events: Array<EventContent> = [];
+  events: EventContent[] = [];
   profile: UserProfile = {
     createdAt: "",
     userName: "",
@@ -48,27 +48,26 @@ export default class User extends Vue {
 
   async beforeCreate() {
     this.loading = true;
+    const id = Number(this.$route.params.id);
     try {
-      const eventResponse = await EventService.getAllEvents(
-        Number(this.$route.params.id)
-      );
-      const events: Array<Duration> = eventResponse.data;
-      this.events = events.map(event => {
-        const start = moment(event.start).format("YYYY-MM-DD HH:mm");
-        const end = moment(event.end).format("YYYY-MM-DD HH:mm");
-        return { start, end, name: "Available", color: "primary" };
-      });
+      const eventResponse = await EventService.getAllEvents(id);
+      const events: Duration[] = eventResponse.data;
+
+      if (events)
+        this.events = events.map(event => {
+          const start = moment(event.start).format("YYYY-MM-DD HH:mm");
+          const end = moment(event.end).format("YYYY-MM-DD HH:mm");
+          return { start, end, name: "Available", color: "primary" };
+        });
+      if (!events) this.events = [];
     } catch (e) {
-      this.$router.push(`/errors/${e}`);
+      this.$router.push(`/error/${e}`);
     }
 
     try {
-      const profileResponse = await UserService.getUserProfile(
-        Number(this.$route.params.id)
-      );
-      this.profile = profileResponse.data;
-
-      if (this.profile.reservations.length) {
+      const profileResponse = await UserService.getUserProfile(id);
+      this.profile = await profileResponse.data;
+      if (this.profile.reservations) {
         const reservations = this.profile.reservations.map(reservation => {
           const start = moment(reservation.start).format("YYYY-MM-DD HH:mm");
           const end = moment(reservation.end).format("YYYY-MM-DD HH:mm");
@@ -105,8 +104,37 @@ export default class User extends Vue {
       this.$router.go(0);
     } catch (e) {
       this.errorMessage = e;
-      await timeout(1000);
+      this.$router.push(`/error/${e}`);
+    }
+  }
+
+  async handleCancelReservation({
+    start,
+    end
+  }: {
+    start: moment.Moment;
+    end: moment.Moment;
+  }) {
+    const reservation = this.profile.reservations.find(reservation => {
+      return (
+        moment(start).format() === reservation.start &&
+        moment(end).format() === reservation.end
+      );
+    });
+
+    const reservationId = (): number => {
+      if (reservation) return reservation.id;
+      return 0;
+    };
+    try {
+      await ReservationService.cancel(
+        Number(this.$route.params.id),
+        reservationId()
+      );
       this.$router.go(0);
+    } catch (e) {
+      this.errorMessage = e;
+      this.$router.push(`/error/${e}`);
     }
   }
 }

@@ -10,6 +10,5 @@ switch (process.env.NODE_ENV) {
     path = `${__dirname}/.env.local`;
 }
 dotenv.config({ path });
-console.log(process.env.BACKEND_URL);
 
 export const BACKEND_URL = process.env.BACKEND_URL;

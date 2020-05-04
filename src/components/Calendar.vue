@@ -38,17 +38,20 @@
         v-model="selectedOpen"
         :close-on-content-click="false"
         :activator="selectedElement"
+        open-delay="10"
+        close-delay="10"
         offset-x
-        ><v-card
+      >
+        <v-card v-if="isAvailable"
           ><v-toolbar
-            ><v-btn icon><v-icon>mdi-event-seat</v-icon></v-btn>
+            ><v-btn icon><v-icon>mdi-check-circle</v-icon></v-btn>
             <v-toolbar-title>Reservation</v-toolbar-title>
-            <v-card-subtitle
-              >Please reserve following time slots</v-card-subtitle
-            >
           </v-toolbar>
+          <v-card-subtitle class="subtitle-1"
+            >Please reserve following time slots</v-card-subtitle
+          >
           <v-card-text>
-            <v-row justify="space-around" align="center">
+            <v-row justify="space-around" align="center" style="width: 580px;">
               <v-col style="width: 290px; flex: 0 1 auto;">
                 <h2>Start:</h2>
                 <v-time-picker
@@ -83,8 +86,27 @@
               Reserve
             </v-btn>
             <v-spacer />
-          </v-card-actions> </v-card
-      ></v-menu>
+          </v-card-actions>
+        </v-card>
+        <v-card v-else>
+          <v-toolbar
+            ><v-btn icon><v-icon>mdi-alarm</v-icon></v-btn>
+            <v-toolbar-title>Reserved</v-toolbar-title>
+          </v-toolbar>
+          <v-card-subtitle class="subtitle-1"
+            >You reserved the date below.</v-card-subtitle
+          >
+          <v-card-text>
+            {{ selectedDate }}<br />
+            {{ start }} ~ {{ end }}
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="error" @click="cancelReservation">Cancel</v-btn>
+            <v-spacer />
+          </v-card-actions>
+        </v-card>
+      </v-menu>
     </v-sheet>
     <v-row justify="center">
       <v-dialog v-model="confirm" max-width="440">
@@ -110,17 +132,15 @@
 <script lang="ts">
 import { Vue, Component, Prop, Emit } from "vue-property-decorator";
 import moment from "moment";
-import { timeout } from "@/utils/util";
 import { EventContent } from "@/types/event";
 
 @Component
 export default class Calendar extends Vue {
   title = "";
   focus = "";
-  selectedEvent = {};
+  selectedEvent: EventContent = { name: "", start: "", end: "", color: "" };
   selectedElement: EventTarget | null = null;
   selectedOpen = false;
-  reservedOpen = false;
   selectedDate = "";
   minStart = "";
   maxStart = "";
@@ -158,6 +178,10 @@ export default class Calendar extends Vue {
     return this.maxDate().isSame(this.focus, "month");
   }
 
+  get isAvailable(): boolean {
+    return this.selectedEvent.name === "Available";
+  }
+
   findToday(): string {
     return moment().format("YYYY-MM-DD");
   }
@@ -179,37 +203,30 @@ export default class Calendar extends Vue {
     }
   }
 
-  async showEvent({
+  showEvent({
     nativeEvent,
     event
   }: {
     nativeEvent: Event;
     event: EventContent;
   }) {
-    const open = async () => {
+    const open = () => {
       this.selectedEvent = event;
       this.selectedElement = nativeEvent.target;
-
       const start = moment(event.start);
       const end = moment(event.end);
       this.selectedDate = start.format("YYYY/MM/DD");
-      this.start = start.format("HH:mm");
-      this.end = end.format("HH:mm");
-      this.minStart = start.format("HH:mm");
-      this.maxEnd = end.format("HH:mm");
+      this.start = this.minStart = start.format("HH:mm");
+      this.end = this.maxEnd = end.format("HH:mm");
       this.maxStart = end.add(-1, "hour").format("HH:mm");
       this.minEnd = start.add(1, "hour").format("HH:mm");
-      await timeout(10);
-      if (event.name === "Available") this.selectedOpen = true;
-      if (event.name === "Reserved") this.reservedOpen = true;
+      this.selectedOpen = true;
     };
 
     if (this.selectedOpen) {
-      await timeout(10);
       this.selectedOpen = false;
-      this.reservedOpen = false;
     } else {
-      await open();
+      open();
     }
   }
 
@@ -231,6 +248,16 @@ export default class Calendar extends Vue {
 
   @Emit()
   addReservation() {
+    const start = moment(
+      `${this.selectedDate} ${this.start}`,
+      "YYYY/MM/DD HH:mm"
+    );
+    const end = moment(`${this.selectedDate} ${this.end}`, "YYYY/MM/DD HH:mm");
+    return { start, end };
+  }
+
+  @Emit()
+  cancelReservation() {
     const start = moment(
       `${this.selectedDate} ${this.start}`,
       "YYYY/MM/DD HH:mm"
