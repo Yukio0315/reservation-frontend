@@ -30,6 +30,7 @@
         ref="calendar"
         v-model="focus"
         :events="events"
+        :event-color="getEventColor"
         @click:event="showEvent"
         @click:date="selectableDate"
       ></v-calendar>
@@ -75,10 +76,9 @@
           <v-card-actions>
             <v-spacer />
             <v-btn
-              text
-              color="ibory"
+              color="primary"
               :disabled="!start || !end"
-              @click="addReservation"
+              @click.stop="confirm = true"
             >
               Reserve
             </v-btn>
@@ -86,11 +86,29 @@
           </v-card-actions> </v-card
       ></v-menu>
     </v-sheet>
+    <v-row justify="center">
+      <v-dialog v-model="confirm" max-width="440">
+        <v-card>
+          <v-card-title
+            >Would you like to reserve the date bellow?</v-card-title
+          >
+          <v-card-subtitle class="display-1">
+            {{ selectedDate }}<br />
+            {{ start }} ~ {{ end }}
+          </v-card-subtitle>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="red" @click="addReservation">Confirm</v-btn>
+            <v-spacer />
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-row>
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Emit } from "vue-property-decorator";
 import moment from "moment";
 import { timeout } from "@/utils/util";
 import { EventContent } from "@/types/event";
@@ -102,12 +120,15 @@ export default class Calendar extends Vue {
   selectedEvent = {};
   selectedElement: EventTarget | null = null;
   selectedOpen = false;
+  reservedOpen = false;
+  selectedDate = "";
   minStart = "";
   maxStart = "";
   minEnd = "";
   maxEnd = "";
   start = "";
   end = "";
+  confirm = false;
   @Prop(Array) readonly events?: Array<Event>;
 
   mounted() {
@@ -145,6 +166,10 @@ export default class Calendar extends Vue {
     return moment().add(30, "days");
   }
 
+  getEventColor(event: EventContent): string {
+    return event.color;
+  }
+
   selectableDate() {
     if (moment(this.focus, "YYYY-MM-DD").diff(moment()) < 0) {
       this.focus = this.findToday();
@@ -167,6 +192,7 @@ export default class Calendar extends Vue {
 
       const start = moment(event.start);
       const end = moment(event.end);
+      this.selectedDate = start.format("YYYY/MM/DD");
       this.start = start.format("HH:mm");
       this.end = end.format("HH:mm");
       this.minStart = start.format("HH:mm");
@@ -174,13 +200,14 @@ export default class Calendar extends Vue {
       this.maxStart = end.add(-1, "hour").format("HH:mm");
       this.minEnd = start.add(1, "hour").format("HH:mm");
       await timeout(10);
-      this.selectedOpen = true;
-      console.log(this.selectedOpen);
+      if (event.name === "Available") this.selectedOpen = true;
+      if (event.name === "Reserved") this.reservedOpen = true;
     };
 
     if (this.selectedOpen) {
-      this.selectedOpen = false;
       await timeout(10);
+      this.selectedOpen = false;
+      this.reservedOpen = false;
     } else {
       await open();
     }
@@ -202,8 +229,14 @@ export default class Calendar extends Vue {
     return m === 0;
   }
 
-  async addReservation() {
-    console.log(this.start, this.end);
+  @Emit()
+  addReservation() {
+    const start = moment(
+      `${this.selectedDate} ${this.start}`,
+      "YYYY/MM/DD HH:mm"
+    );
+    const end = moment(`${this.selectedDate} ${this.end}`, "YYYY/MM/DD HH:mm");
+    return { start, end };
   }
 }
 </script>

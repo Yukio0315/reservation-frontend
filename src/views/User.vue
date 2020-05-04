@@ -56,7 +56,7 @@ export default class User extends Vue {
       this.events = events.map(event => {
         const start = moment(event.start).format("YYYY-MM-DD HH:mm");
         const end = moment(event.end).format("YYYY-MM-DD HH:mm");
-        return { start, end, name: "Available", color: "indigo" };
+        return { start, end, name: "Available", color: "primary" };
       });
     } catch (e) {
       this.$router.push(`/errors/${e}`);
@@ -67,13 +67,14 @@ export default class User extends Vue {
         Number(this.$route.params.id)
       );
       this.profile = profileResponse.data;
-      if (this.profile.reservations) {
+
+      if (this.profile.reservations.length) {
         const reservations = this.profile.reservations.map(reservation => {
           const start = moment(reservation.start).format("YYYY-MM-DD HH:mm");
           const end = moment(reservation.end).format("YYYY-MM-DD HH:mm");
-          return { start, end, name: "Reserved", color: "red" };
+          return { start, end, name: "Reserved", color: "error" };
         });
-        this.events.concat(reservations);
+        this.events.push(...reservations);
       }
     } catch (e) {
       this.$router.push(`/error/${e}`);
@@ -88,7 +89,13 @@ export default class User extends Vue {
     this.isCalendar = !this.isCalendar;
   }
 
-  async handleAddReservation(start: string, end: string) {
+  async handleAddReservation({
+    start,
+    end
+  }: {
+    start: moment.Moment;
+    end: moment.Moment;
+  }) {
     try {
       await ReservationService.add(
         Number(this.$route.params.id),
