@@ -2,8 +2,12 @@
   <v-toolbar color="indigo">
     <v-toolbar-title>Share office</v-toolbar-title>
     <v-spacer />
-    <v-btn icon @click="toggleCalendar"><v-icon>$calendar</v-icon></v-btn>
-    <v-btn icon @click="toggleCalendar"><v-icon>$person</v-icon></v-btn>
+    <v-btn icon :disabled="isCalendar" @click="toggleCalendar"
+      ><v-icon>$calendar</v-icon></v-btn
+    >
+    <v-btn icon :disabled="!isCalendar" @click="toggleCalendar"
+      ><v-icon>$person</v-icon></v-btn
+    >
     <v-btn icon @click="signOut"><v-icon>$signOut</v-icon></v-btn>
   </v-toolbar>
 </template>
