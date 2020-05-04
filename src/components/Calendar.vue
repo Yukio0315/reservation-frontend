@@ -33,6 +33,7 @@
         :event-color="getEventColor"
         @click:event="showEvent"
         @click:date="selectableDate"
+        @click:more="openDaily"
       ></v-calendar>
       <v-menu
         v-model="selectedOpen"
@@ -107,6 +108,24 @@
           </v-card-actions>
         </v-card>
       </v-menu>
+      <v-menu
+        v-model="showDaily"
+        offset-x
+        open-delay="10"
+        close-delay="10"
+        :close-on-content-click="false"
+        min-width="290px"
+      >
+        <v-calendar
+          ref="calendar"
+          v-model="focus"
+          type="day"
+          :events="events"
+          :event-color="getEventColor"
+          @click:event="showEvent"
+        >
+        </v-calendar>
+      </v-menu>
     </v-sheet>
     <v-row justify="center">
       <v-dialog v-model="confirm" max-width="440">
@@ -149,6 +168,7 @@ export default class Calendar extends Vue {
   start = "";
   end = "";
   confirm = false;
+  showDaily = false;
   @Prop(Array) readonly events?: Array<Event>;
 
   mounted() {
@@ -156,18 +176,6 @@ export default class Calendar extends Vue {
       "MM/DD"
     )} Reservation `;
     this.focus = this.findToday();
-  }
-
-  get calendarInstance(): Vue & {
-    prev: () => void;
-    next: () => void;
-    getFormatter: (format: unknown) => unknown;
-  } {
-    return this.$refs.calendar as Vue & {
-      prev: () => void;
-      next: () => void;
-      getFormatter: (format: unknown) => unknown;
-    };
   }
 
   get isThisMonth(): boolean {
@@ -192,6 +200,11 @@ export default class Calendar extends Vue {
 
   getEventColor(event: EventContent): string {
     return event.color;
+  }
+
+  openDaily({ date }: { date: string }) {
+    this.focus = date;
+    this.showDaily = true;
   }
 
   selectableDate() {
