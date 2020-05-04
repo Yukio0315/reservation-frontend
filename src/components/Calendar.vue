@@ -1,12 +1,26 @@
 <template>
   <div>
     <v-sheet height="64">
-      <v-toolbar flat color="white">
-        <v-btn fab text small color="grey darken-2" @click="prev">
+      <v-toolbar flat>
+        <v-btn
+          fab
+          small
+          :disabled="isThisMonth"
+          @click="$refs.calendar.prev()"
+          color="primary"
+        >
           <v-icon small>mdi-chevron-left</v-icon>
         </v-btn>
+        <v-spacer />
         <v-toolbar-title>{{ title }}</v-toolbar-title>
-        <v-btn fab text small color="grey darken-2" @click="next">
+        <v-spacer />
+        <v-btn
+          fab
+          small
+          :disabled="isNextMonth"
+          @click="$refs.calendar.next()"
+          color="primary"
+        >
           <v-icon small>mdi-chevron-right</v-icon>
         </v-btn>
       </v-toolbar>
@@ -14,8 +28,10 @@
     <v-sheet height="1000">
       <v-calendar
         ref="calendar"
+        v-model="focus"
         :events="events"
         @click:event="showEvent"
+        @click:date="selectableDate"
       ></v-calendar>
       <v-menu
         v-model="selectedOpen"
@@ -81,7 +97,8 @@ import { EventContent } from "@/types/event";
 
 @Component
 export default class Calendar extends Vue {
-  title = "title";
+  title = "";
+  focus = "";
   selectedEvent = {};
   selectedElement: EventTarget | null = null;
   selectedOpen = false;
@@ -92,6 +109,13 @@ export default class Calendar extends Vue {
   start = "";
   end = "";
   @Prop(Array) readonly events?: Array<Event>;
+
+  mounted() {
+    this.title = ` ${moment().format("YYYY/MM/DD")}~${this.maxDate().format(
+      "MM/DD"
+    )} Reservation `;
+    this.focus = this.findToday();
+  }
 
   get calendarInstance(): Vue & {
     prev: () => void;
@@ -105,12 +129,30 @@ export default class Calendar extends Vue {
     };
   }
 
-  // monthFormatter() {
-  //   return this.calendarInstance.getFormatter({
-  //     timeZone: "JST",
-  //     month: "long"
-  //   });
-  // }
+  get isThisMonth(): boolean {
+    return moment().isSame(this.focus, "month");
+  }
+
+  get isNextMonth(): boolean {
+    return this.maxDate().isSame(this.focus, "month");
+  }
+
+  findToday(): string {
+    return moment().format("YYYY-MM-DD");
+  }
+
+  maxDate(): moment.Moment {
+    return moment().add(30, "days");
+  }
+
+  selectableDate() {
+    if (moment(this.focus, "YYYY-MM-DD").diff(moment()) < 0) {
+      this.focus = this.findToday();
+    }
+    if (moment(this.focus, "YYYY-MM-DD").diff(this.maxDate()) > 0) {
+      this.focus = this.maxDate().format("YYYY-MM-DD");
+    }
+  }
 
   async showEvent({
     nativeEvent,
@@ -122,16 +164,15 @@ export default class Calendar extends Vue {
     const open = async () => {
       this.selectedEvent = event;
       this.selectedElement = nativeEvent.target;
-      this.start = moment(event.start).format("HH:mm");
-      this.end = moment(event.end).format("HH:mm");
-      this.minStart = moment(event.start).format("HH:mm");
-      this.maxStart = moment(event.end)
-        .add(-1, "hour")
-        .format("HH:mm");
-      this.minEnd = moment(event.start)
-        .add(1, "hour")
-        .format("HH:mm");
-      this.maxEnd = moment(event.end).format("HH:mm");
+
+      const start = moment(event.start);
+      const end = moment(event.end);
+      this.start = start.format("HH:mm");
+      this.end = end.format("HH:mm");
+      this.minStart = start.format("HH:mm");
+      this.maxEnd = end.format("HH:mm");
+      this.maxStart = end.add(-1, "hour").format("HH:mm");
+      this.minEnd = start.add(1, "hour").format("HH:mm");
       await timeout(10);
       this.selectedOpen = true;
       console.log(this.selectedOpen);
@@ -155,14 +196,6 @@ export default class Calendar extends Vue {
     this.maxStart = moment(this.end, "HH:mm")
       .add(-1, "hour")
       .format("HH:mm");
-  }
-
-  prev() {
-    this.calendarInstance.prev();
-  }
-
-  next() {
-    this.calendarInstance.next();
   }
 
   allowedStep(m: number): boolean {
