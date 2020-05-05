@@ -73,15 +73,17 @@
         >
           <v-text-field
             id="password"
+            :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
             @keyup="setIsValidPassword(valid)"
             v-model="password"
             label="Password"
             name="password"
             :error-messages="errors"
             prepend-icon="mdi-lock"
-            type="password"
+            :type="show ? 'text' : 'password'"
             :counter="30"
             required
+            @click:append="show = !show"
           />
         </ValidationProvider>
       </v-form>
@@ -158,6 +160,7 @@ export default class Auth extends Vue {
   name = "";
   email = "";
   password = "";
+  show = false;
   isValidEmail = false;
   isValidPassword = false;
   isValidName = false;
