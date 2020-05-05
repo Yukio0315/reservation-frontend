@@ -20,6 +20,7 @@
           @change-password="handleChangePassword"
           @change-email="handleChangeEmail"
           @change-user-name="handleChangeUserName"
+          @cancel-reservation="handleCancelReservation"
         />
         <router-view name="footer"></router-view>
       </v-col>

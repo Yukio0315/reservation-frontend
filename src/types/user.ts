@@ -25,7 +25,7 @@ export type UserProfile = {
   reservations: Array<Reservation>;
 };
 
-type Reservation = {
+export type Reservation = {
   id: number;
   start: string;
   end: string;
