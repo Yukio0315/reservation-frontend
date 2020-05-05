@@ -5,8 +5,11 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Prop } from "vue-property-decorator";
+import { UserProfile } from "@/types/user";
 
 @Component
-export default class Profile extends Vue {}
+export default class Profile extends Vue {
+  @Prop(Object) readonly profile!: UserProfile;
+}
 </script>

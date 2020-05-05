@@ -14,7 +14,13 @@
           @add-reservation="handleAddReservation"
           @cancel-reservation="handleCancelReservation"
         />
-        <Profile v-if="!isCalendar" :profile="profile" />
+        <Profile
+          v-if="!isCalendar"
+          :profile="profile"
+          @change-password="handleChangePassword"
+          @change-email="handleChangeEmail"
+          @change-user-name="handleChangeUserName"
+        />
         <router-view name="footer"></router-view>
       </v-col>
     </v-row>
@@ -136,6 +142,34 @@ export default class User extends Vue {
       this.errorMessage = e;
       this.$router.push(`/error/${e}`);
     }
+  }
+
+  async handleChangePassword({
+    oldPassword,
+    newPassword
+  }: {
+    oldPassword: string;
+    newPassword: string;
+  }) {
+    await UserService.changePassword(
+      Number(this.$route.params.id),
+      oldPassword,
+      newPassword
+    ).catch(e => this.$router.push(`/error/${e}`));
+  }
+
+  async handleChangeUserName(userName: string) {
+    await UserService.changeUserName(
+      Number(this.$route.params.id),
+      userName
+    ).catch(e => this.$router.push(`/error/${e}`));
+  }
+
+  async handleChangeEmail(email: string) {
+    await UserService.changeEmail(
+      Number(this.$route.params.id),
+      email
+    ).catch(e => this.$router.push(`/error/${e}`));
   }
 }
 </script>
