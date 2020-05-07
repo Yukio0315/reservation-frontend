@@ -77,7 +77,7 @@
     </v-card-actions>
     <ChangePassword
       v-if="showChangePassword"
-      @change-password="changePassword"
+      @changePassword="changePassword"
     />
     <DeleteAccount v-if="showDeleteAccount" @delete-accound="deleteAccount" />
   </v-card>
@@ -160,6 +160,11 @@ export default class Profile extends Vue {
   @Emit()
   cancelReservation(reservation: Reservation) {
     return { start: moment(reservation.start), end: moment(reservation.end) };
+  }
+
+  @Emit()
+  changePassword(passwords: { newPassword: string; oldPassword: string }) {
+    return passwords;
   }
 }
 </script>
