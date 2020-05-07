@@ -62,6 +62,7 @@
         </v-list-item>
       </v-list>
     </v-card-text>
+    <v-alert :type="messageState" v-if="message">{{ message }}</v-alert>
     <v-card-actions>
       <v-spacer />
       <v-btn
@@ -70,7 +71,7 @@
         ><v-icon>mdi-lock</v-icon>Change password</v-btn
       >
       <v-btn
-        :color="showDeleteAccount ? 'error' : undefined"
+        :color="showDeleteAccount ? 'primary' : undefined"
         @click="toggleShowDeleteAccount"
         ><v-icon>mdi-delete-sweep</v-icon>Delete an account</v-btn
       >
@@ -96,6 +97,8 @@ import DeleteAccount from "@/components/DeleteAccount.vue";
 })
 export default class Profile extends Vue {
   @Prop(Object) readonly profile!: UserProfile;
+  @Prop(String) readonly messageState!: "success" | "error";
+  @Prop(String) readonly message!: string;
   editUserName = false;
   editEmail = false;
   isValidName = true;

@@ -17,6 +17,8 @@
         <Profile
           v-if="!isCalendar"
           :profile="profile"
+          :message="message"
+          :messageState="messageState"
           @change-password="handleChangePassword"
           @change-email="handleChangeEmail"
           @change-user-name="handleChangeUserName"
@@ -38,12 +40,13 @@ import ReservationService from "@/services/reservation.service";
 import { EventContent, Duration } from "@/types/event";
 import { UserProfile } from "@/types/user";
 import moment from "moment";
+import { timeout } from "../utils/util";
 
 @Component({ components: { Calendar, Profile } })
 export default class User extends Vue {
   loading = false;
   isCalendar = true;
-  errorMessage = "";
+  message = "";
   events: EventContent[] = [];
   profile: UserProfile = {
     createdAt: "",
@@ -52,6 +55,7 @@ export default class User extends Vue {
     permission: "",
     reservations: []
   };
+  messageState: "success" | "error" = "success";
 
   async beforeCreate() {
     this.loading = true;
@@ -110,7 +114,6 @@ export default class User extends Vue {
       );
       this.$router.go(0);
     } catch (e) {
-      this.errorMessage = e;
       this.$router.push(`/error/${e}`);
     }
   }
@@ -140,7 +143,6 @@ export default class User extends Vue {
       );
       this.$router.go(0);
     } catch (e) {
-      this.errorMessage = e;
       this.$router.push(`/error/${e}`);
     }
   }
@@ -152,11 +154,22 @@ export default class User extends Vue {
     oldPassword: string;
     newPassword: string;
   }) {
-    await UserService.changePassword(
-      Number(this.$route.params.id),
-      oldPassword,
-      newPassword
-    ).catch(e => this.$router.push(`/error/${e}`));
+    try {
+      await UserService.changePassword(
+        Number(this.$route.params.id),
+        oldPassword,
+        newPassword
+      );
+      this.message = "You have changed email address successfully";
+      this.messageState = "success";
+      await timeout(2000);
+      this.message = "";
+    } catch (e) {
+      this.message = "Invalid old password";
+      this.messageState = "error";
+      await timeout(2000);
+      this.message = "";
+    }
   }
 
   async handleChangeUserName(userName: string) {
