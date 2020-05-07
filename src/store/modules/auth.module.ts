@@ -19,7 +19,7 @@ class Auth extends VuexModule implements AuthState {
   public errorMessage = "";
 
   @Mutation
-  error(message: string) {
+  private error(message: string) {
     [(this.errorMessage = message)];
   }
   @Action({ commit: "error" })

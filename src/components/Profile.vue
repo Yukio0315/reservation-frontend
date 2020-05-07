@@ -137,21 +137,15 @@ export default class Profile extends Vue {
   editOrSaveUserName() {
     if (this.isValidName) {
       this.editUserName = !this.editUserName;
-      if (this.name != this.profile.userName && !this.editUserName) {
-        console.log(this.name);
-
+      if (this.name != this.profile.userName && !this.editUserName)
         this.$emit("change-user-name", this.name);
-      }
     }
   }
   editOrSaveEmail() {
     if (this.isValidEmail) {
       this.editEmail = !this.editEmail;
-      if (this.email != this.profile.email && !this.editEmail) {
-        console.log(this.email);
-
+      if (this.email != this.profile.email && !this.editEmail)
         this.$emit("change-email", this.email);
-      }
     }
   }
 
@@ -177,8 +171,6 @@ export default class Profile extends Vue {
 
   @Emit()
   deleteAccount(email: string) {
-    console.log(email);
-
     return email;
   }
 }

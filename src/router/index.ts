@@ -8,6 +8,7 @@ import NotFound from "@/views/NotFound.vue";
 import ResetPassword from "@/views/ResetPassword.vue";
 import ErrorPage from "@/views/ErrorPage.vue";
 import moment from "moment";
+import { authModule } from "@/store/modules/auth.module";
 
 Vue.use(VueRouter);
 
@@ -61,6 +62,7 @@ router.beforeEach((to, from, next) => {
     Object.keys(loggedIn).length !== 0 && moment().diff(loggedIn.expire) > 0;
 
   if (authRequired && (isNoToken || isTokenExpired)) {
+    if (isTokenExpired) authModule.setError("Token expired. Please sign in again.");
     next("/auth");
   } else {
     next();

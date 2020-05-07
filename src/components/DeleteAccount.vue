@@ -53,8 +53,6 @@ export default class DeleteAccount extends Vue {
   }
 
   deleteAccount() {
-    console.log("delete");
-
     this.$emit("deleteAccount", this.email);
   }
 }
