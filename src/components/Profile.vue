@@ -71,16 +71,21 @@
         ><v-icon>mdi-lock</v-icon>Change password</v-btn
       >
       <v-btn
+        v-if="profile.permission === 'user'"
         :color="showDeleteAccount ? 'primary' : undefined"
         @click="toggleShowDeleteAccount"
-        ><v-icon>mdi-delete-sweep</v-icon>Delete an account</v-btn
+        ><v-icon>mdi-delete-sweep</v-icon>Delete this account</v-btn
       >
     </v-card-actions>
     <ChangePassword
       v-if="showChangePassword"
       @changePassword="changePassword"
     />
-    <DeleteAccount v-if="showDeleteAccount" @delete-accound="deleteAccount" />
+    <DeleteAccount
+      v-if="showDeleteAccount"
+      :validEmail="email"
+      @deleteAccount="deleteAccount"
+    />
   </v-card>
 </template>
 
@@ -168,6 +173,13 @@ export default class Profile extends Vue {
   @Emit()
   changePassword(passwords: { newPassword: string; oldPassword: string }) {
     return passwords;
+  }
+
+  @Emit()
+  deleteAccount(email: string) {
+    console.log(email);
+
+    return email;
   }
 }
 </script>

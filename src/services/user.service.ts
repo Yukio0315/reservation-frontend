@@ -26,6 +26,12 @@ class UserService {
       { headers: authHeader() }
     );
   }
+  deleteAccount(id: number, email: string) {
+    return axios.delete(`users/${id}`, {
+      headers: authHeader(),
+      data: { email }
+    });
+  }
 }
 
 export default new UserService();

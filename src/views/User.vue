@@ -19,8 +19,9 @@
           :profile="profile"
           :message="message"
           :messageState="messageState"
-          @change-password="handleChangePassword"
           @change-email="handleChangeEmail"
+          @delete-account="handleDeleteAccount"
+          @change-password="handleChangePassword"
           @change-user-name="handleChangeUserName"
           @cancel-reservation="handleCancelReservation"
         />
@@ -41,6 +42,7 @@ import { EventContent, Duration } from "@/types/event";
 import { UserProfile } from "@/types/user";
 import moment from "moment";
 import { timeout } from "../utils/util";
+import { authModule } from "../store/modules/auth.module";
 
 @Component({ components: { Calendar, Profile } })
 export default class User extends Vue {
@@ -184,6 +186,17 @@ export default class User extends Vue {
       Number(this.$route.params.id),
       email
     ).catch(e => this.$router.push(`/error/${e}`));
+  }
+
+  async handleDeleteAccount(email: string) {
+    try {
+      await UserService.deleteAccount(Number(this.$route.params.id), email);
+      authModule.setError("Your account was deleted successfully.");
+      authModule.signOut();
+      this.$router.push("/auth");
+    } catch (e) {
+      this.$router.push(`/error/${e}`);
+    }
   }
 }
 </script>
