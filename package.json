@@ -11,7 +11,7 @@
     "dev": "set NODE_ENV=development && nodemon -L >&2 | yarn serve"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "core-js": "^3.6.4",
     "dotenv": "^8.2.0",
     "moment": "2.22.1",
